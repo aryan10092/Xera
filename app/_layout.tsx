@@ -1,29 +1,43 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import React from 'react';
+import Post from './Post';
+import Home from './Home';
+import Allposts from './Allposts';
+import Profile from './Profile';
 
-import { useColorScheme } from '@/hooks/useColorScheme';
+const Tab = createBottomTabNavigator();
 
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
-
-  if (!loaded) {
-    // Async font loading only occurs in development.
-    return null;
-  }
-
+export default function Layout() {
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        headerShown: false,
+        tabBarShowLabel: false,
+        tabBarStyle: {
+          backgroundColor: '#23243a',
+          borderTopWidth: 0,
+          height: 70,
+          paddingBottom: 10,
+          paddingTop: 10,
+        },
+        tabBarActiveTintColor: '#ffb86c',
+        tabBarInactiveTintColor: '#f3f4fa',
+        tabBarIcon: ({ color, size }) => {
+          let iconName = 'home';
+          if (route.name === 'Home') iconName = 'home';
+          else if (route.name === 'Post') iconName = 'play-outline';
+            else if (route.name === 'Profile') iconName = 'person-outline';
+            else if (route.name === 'Allposts') iconName = 'search-outline';
+          return <Ionicons name={iconName as any} size={size} color={color} />;
+        },
+      })}
+    >
+      <Tab.Screen name="Home" component={Home}  />
+      <Tab.Screen name="Allposts" component={Allposts} options={{ tabBarLabel: 'Allposts' }} />
+      <Tab.Screen name="Post" component={Post} options={{ tabBarLabel: 'Post' }} />
+      <Tab.Screen name="Profile" component={Profile} options={{ tabBarLabel: 'Profile' }} />
+      
+    </Tab.Navigator>
   );
 }
