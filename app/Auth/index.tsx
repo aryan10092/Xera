@@ -5,7 +5,7 @@ import { Text, TouchableOpacity, View } from 'react-native'
 function Auth() {
   return (
     <View className='flex-1 bg-black justify-center items-center px-8'>
-      <Text className='text-white text-4xl font-bold mb-4 text-center'>Welcome to FlowX</Text>
+      <Text className='text-white text-4xl font-bold mb-4 text-center'>Welcome to Zera</Text>
       <Text className='text-gray-300 text-base mb-20 text-center w-[88%]'>
          Find posts that match your vibe and connect with what truly inspires you.
       </Text>
