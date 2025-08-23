@@ -3,11 +3,10 @@ import { AntDesign, FontAwesome, MaterialCommunityIcons } from '@expo/vector-ico
 import Feather from '@expo/vector-icons/Feather';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import React, { useEffect, useState } from 'react';
-import { useFocusEffect } from 'expo-router';
-import { Animated, Dimensions, Easing, Image, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { Animated, Dimensions, Easing, FlatList, Image, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { supabase } from '../../lib/supabase';
-
 import { Video, ResizeMode, Audio } from "expo-av";
 
 const { height: screenHeight } = Dimensions.get('window');
@@ -18,11 +17,13 @@ export default function Allposts() {
   const userId = useAuthStore((state) => state.user?.id || null)
   const user = useAuthStore((state) => state.user || null)
 
-  // --- Add state for user search ---
+ 
 const [searchText, setSearchText] = useState('');
 const [filteredUsers, setFilteredUsers] = useState<any[]>([])
 
-// --- Fetch users from Supabase when searchText changes ---
+
+
+// Fetching users from Supabase when searchText changes 
 useEffect(() => {
   const fetchUsers = async () => {
     if (!searchText.trim()) {
@@ -101,7 +102,19 @@ useEffect(() => {
       refetchPosts();
     }, [refetchPosts])
   );
+   
+  // scrolling to the specific post
+const scrollRef = useRef<FlatList<any>>(null);
+const { postId } = useLocalSearchParams()
 
+useEffect(() => {
+    if (postId && posts.length > 0) {
+      const index = posts.findIndex(post => post.id == postId);
+      if (index !== -1 && scrollRef.current) {
+        scrollRef.current.scrollToIndex({ index, animated: true });
+      }
+    }
+  }, [postId, posts]);
   
   // Like mutation: add like row
   const likeMutation = useMutation({
@@ -201,7 +214,7 @@ const removebookmark=useMutation({
   // Comments logic using Supabase comments table
   const [commentsList, setCommentsList] = useState<{ [key: number]: Array<{ id: number, user_id: string, comment: string, created_at: string, name: string, avatar: string | null }> }>({});
 
-  // Fetch comments for all posts
+  // Fetching comments for all posts
   const fetchComments = async () => {
     const { data, error } = await supabase
       .from('comments')
@@ -265,171 +278,195 @@ const removebookmark=useMutation({
 
   const currentPost = openComment ? posts.find((post: any) => post.id === openComment) : null;
 
-  return (
-    <>
-    <ScrollView className="bg-[#000000] flex-1" contentContainerStyle={{ paddingVertical: 48 }}>
-      <View className="pl-6 mb-4 mt-6  flex-row items-center gap-3">
-        <View className="bg-[#181818] p-3 rounded-full shadow-lg">
-        <FontAwesome5 name="th-large" size={24} color="#fff" />
-        </View>
-        <View>
-        <Text className="text-white text-lg font-semibold mb-1 tracking-wider">All Categories</Text>
-        <Text className="text-white/70 text-sm tracking-wider">Explore posts from every category</Text>
-        </View>
+    const renderPost = ({ item: post }: { item: any }) => (
+    <View
+      key={post.id}
+      className="mx-7 mb-8 rounded-3xl overflow-hidden bg-[#000000] border border-[#292a3d]"
+    >
+      {/* Header */}
+      <View className="flex-row items-center justify-between px-5 pr-6 pb-4 mt-4">
+        <Pressable
+          onPress={() =>
+            router.push({ pathname: "/OtherUserProfile", params: { userId: post.user_id } })
+          }
+          className="flex-row items-center gap-2"
+        >
+          <Image
+            source={post.avatar ? { uri: post.avatar } : require("../../assets/images/default.webp")}
+            className="w-8 h-8 rounded-full bg-gray-200"
+          />
+          <Text className="text-white text-sm font-semibold">{post.user}</Text>
+        </Pressable>
+        <Text className="text-xs text-slate-300 tracking-wide">
+          {new Date(post.created_at).toLocaleDateString()}
+        </Text>
       </View>
 
-      <View className='flex-row items-center px-6 py-2 mt-3 mb-5 mx-7 border bg-black border-[#292a3d] rounded-xl  shadow-2xl gap-2'>
-      <Feather name="search" size={18} color="#cbd5e1" style={{ paddingTop:2 }} />
-      <TextInput
-        placeholder="Search"
-        placeholderTextColor="#cbd5e1"
-         value={searchText}
-    onChangeText={setSearchText}
-        style={{ flex: 1, color: 'white', fontSize: 16, paddingVertical: 2,alignItems: 'center', backgroundColor: 'transparent' }}
-        underlineColorAndroid="transparent"
-      />
-    </View>
+      {/* Media */}
+      <View className="relative">
+        {post.video ? (
+          <Video
+            source={{ uri: post.video }}
+            shouldPlay={false} 
+            isMuted
+            resizeMode={ResizeMode.COVER}
+            style={{ width: "94%", height: 295, borderRadius: 16, marginLeft: 10 }}
+          />
+        ) : (
+          <Image
+            source={{ uri: post.image }}
+            className="w-[94%] ml-3 flex h-80 rounded-2xl"
+            resizeMode="cover"
+          />
+        )}
+      </View>
 
-    {filteredUsers.length > 0 && (
-  <View className="px-5  mb-6   mx-6 justify-center">
-    {filteredUsers.map(user => (
-      <TouchableOpacity
-        key={user.id}
-        className="flex-row items-center mb-4 pl-4 pt-3 gap-1 bg-[#131321] rounded-xl"
-        onPress={() => {
-          // Add your navigation logic here, e.g.:
-          // router.push(`/profile/${user.id}`)
-        }}
-      >
-        <Image
-          source={user.profile ? { uri: user.profile } : require('../../assets/images/default.webp')}
-          className="w-14 h-14 rounded-full mr-3 border-2 border-slate-700 "
-        />
-        <View className='flex-col'>
-          <Text className="text-white text-base">{user.name}</Text>
-          <Text className="text-white/70 text-sm">{user.caption}</Text>
-        </View>
-      </TouchableOpacity>
-    ))}
-  </View>
-)}
+      {/* Caption */}
+      <View className="px-5 mt-6 pb-2">
+        <Text className="text-white text-md mb-1 font-normal">{post.caption}</Text>
+      </View>
 
-        {isLoading ? (
-          <Text className="text-white text-center">Loading posts...</Text>
-        ) : isError ? (
-          <Text className="text-red-500 text-center">Failed to load posts.</Text>
-        ) : posts.length === 0 ? (
-          <Text className="text-white text-center">No posts found.</Text>
-        ) : posts.map((post: any) => (
-          <View
-            key={post.id}
-            className="mx-7 mb-8  rounded-3xl overflow-hidden bg-[#000000] border border-[#292a3d]"
-            
+      {/* Actions */}
+      <View className="flex-row items-center justify-between px-5 pr-6 pb-4 pt-3">
+        <View className="flex-row items-center gap-0.5">
+          {/* Like */}
+          <Pressable
+            className="flex-row items-center min-w-[48px] justify-center gap-1.5"
+            onPress={() => {
+              const alreadyLiked = likedPosts.includes(post.id);
+              if (alreadyLiked) unlikeMutation.mutate(post.id);
+              else likeMutation.mutate(post.id);
+            }}
           >
-            <View className="flex-row items-center  justify-between px-5 pr-6 pb-4 mt-4 ">
-              <View className="flex-row items-center gap-2">
-                <Image
-                  source={post.avatar ? { uri: post.avatar } : require('../../assets/images/default.webp')}
-                  className="w-8 h-8 rounded-full bg-gray-200" />
-                <Text className="text-white text-sm font-semibold">{post.user}</Text>
-              </View>
-              <Text className=" text-xs text-slate-300  tracking-wide">{new Date(post.created_at).toLocaleDateString()}</Text>
-            </View>
+            {likedPosts.includes(post.id) ? (
+              <FontAwesome5 name="heart" size={18} color="#fff" solid />
+            ) : (
+              <AntDesign name="hearto" size={18} color="#fff" />
+            )}
+            <Text className="text-slate-200 text-sm font-medium tracking-wide w-[20px] ">
+              {likeCounts[post.id] ?? 0}
+            </Text>
+          </Pressable>
 
-          {/* Post image with rounded corners and time */}
-          <View className="relative">
-      
-             {post.video ? (
-               <>
-              
-               <Video
-                 source={{ uri: post.video }}
-                 shouldPlay
-                 isMuted
-                 isLooping
-                resizeMode={ResizeMode.COVER} 
-                 useNativeControls={false}
-                 style={{ width: "94%", height: 295, borderRadius: 16,marginLeft:10 }}
+          {/* Comment */}
+          <Pressable
+            className="flex-row items-center gap-1.5"
+            onPress={() => openCommentModal(post.id)}
+          >
+            <FontAwesome name="comment-o" size={19} color="#fff" style={{ marginBottom: 3 }} />
+            <Text className="text-slate-200 text-sm font-medium w-[20px]">
+              {commentsList[post.id]?.length || 0}
+            </Text>
+          </Pressable>
 
-                 />
-                
-              </>
-             ) : (
-           <Image
-        source={{ uri: post.image }}
-             className="w-[94%] ml-3 mt- flex h-80 rounded-2xl"
-             resizeMode="cover"
-               />
-               )}
-
-        
-          </View>
-          {/* Caption below image */}
-          <View className="px-5 mt-6 pb-2">
-            <Text className="text-white text-md mb-1 font-normal">{post.caption}</Text>
-          </View>
-          {/* User info and actions */}
-          <View className="flex-row items-center justify-between px-5 pr-6 pb-4 pt-3 ">
-            {/* <View className="flex-row items-center gap-2">
-              <Image
-                source={post.avatar}
-                className="w-8 h-8 rounded-full bg-gray-200" />
-
-              <Text className="text-white text-sm font-semibold">{post.user}</Text>
-            </View> */}
-            <View className="flex-row items-center gap-0.5">
-              <Pressable
-                className="flex-row items-center min-w-[48px] justify-center gap-1.5"
-                onTouchEnd={() => {
-                  const alreadyLiked = likedPosts.includes(post.id);
-                  if (alreadyLiked) {
-                    unlikeMutation.mutate(post.id);
-                  } else {
-                    likeMutation.mutate(post.id);
-                  }
-                }}
-               
-              >
-                {likedPosts.includes(post.id) ? (
-                  <FontAwesome5
-                    name="heart"
-                    size={18}
-                    color="#fff"
-                    solid
-                  />
-                ) : (
-                  <AntDesign name="hearto" size={18} color="#fff" />
-                )}
-                <Text className="text-slate-200 text-sm font-medium tracking-wide w-[20px] ">{likeCounts[post.id] ?? 0}</Text>
-              </Pressable>
-              <Pressable
-                className="flex-row items-center gap-1.5 mb-"
-                onTouchEnd={() => openCommentModal(post.id)}  >
-
-                <FontAwesome name="comment-o" size={19} color="#fff" style={{marginBottom: 3}}/>
-                <Text className="text-slate-200 text-sm font-medium w-[20px]">{(commentsList[post.id]?.length || 0)}</Text>
-              </Pressable>
-              <Pressable className='mb-0.5 flex-row' 
-                onTouchEnd={() => {
-                  const alreadyBookmarked = bookmark.includes(post.id)
-                  if (alreadyBookmarked) {
-                    removebookmark.mutate(post.id)
-                  } else {
-                    addbookmark.mutate(post.id)
-                  }
-                }}>
-                  {bookmark.includes(post.id) ? (
-                    <FontAwesome name="bookmark" size={19} color="#fff" />
-                  ) : (
-                    <FontAwesome name="bookmark-o" size={19} color="#fff" />
-                  )}
-                  <Text className="text-slate-200 text-sm font-medium w-[30px]"></Text>
-              </Pressable>
-            </View>
-          </View>
+          {/* Bookmark */}
+          <Pressable
+            className="mb-0.5 flex-row"
+            onPress={() => {
+              const alreadyBookmarked = bookmark.includes(post.id);
+              if (alreadyBookmarked) removebookmark.mutate(post.id);
+              else addbookmark.mutate(post.id);
+            }}
+          >
+            {bookmark.includes(post.id) ? (
+              <FontAwesome name="bookmark" size={19} color="#fff" />
+            ) : (
+              <FontAwesome name="bookmark-o" size={19} color="#fff" />
+            )}
+          </Pressable>
         </View>
-      ))}
-    </ScrollView>
+      </View>
+    </View>
+  );
+
+  return (
+    <>
+      <FlatList
+        ref={scrollRef}
+        data={posts}
+        renderItem={renderPost}
+        keyExtractor={(item) => item.id.toString()}
+         getItemLayout={(_, index) => ({
+    length: 470, 
+    offset: 470 * index,
+    index,
+  })}
+        ListHeaderComponent={
+          <View >
+            {/* Categories */}
+            <View className="pl-6 mb-4 mt-6 pt-10 flex-row items-center gap-3">
+              <View className="bg-[#181818] p-3 rounded-full shadow-lg">
+                <FontAwesome5 name="th-large" size={24} color="#fff" />
+              </View>
+              <View>
+                <Text className="text-white text-lg font-semibold mb-1 tracking-wider">
+                  All Categories
+                </Text>
+                <Text className="text-white/70 text-sm tracking-wider">
+                  Explore posts from every category
+                </Text>
+              </View>
+            </View>
+
+            {/* Search */}
+            <View className="flex-row items-center px-6 py-2 mt-3 mb-5 mx-7 border bg-black border-[#292a3d] rounded-xl shadow-2xl gap-2">
+              <Feather name="search" size={18} color="#cbd5e1" style={{ paddingTop: 2 }} />
+              <TextInput
+                placeholder="Search"
+                placeholderTextColor="#cbd5e1"
+                value={searchText}
+                onChangeText={setSearchText}
+                style={{
+                  flex: 1,
+                  color: "white",
+                  fontSize: 16,
+                  paddingVertical: 2,
+                  backgroundColor: "transparent",
+                }}
+              />
+            </View>
+
+            {/* Filtered Users */}
+            {filteredUsers.length > 0 && (
+              <View className="bg-black px-5 mb-6 mx-6 justify-center">
+                {filteredUsers.map((user) => (
+                  <TouchableOpacity
+                    key={user.id}
+                    className="flex-row items-center mb-4 pl-4 pt-3 gap-1 bg-[#131321] rounded-xl"
+                    onPress={() =>
+                      router.push({ pathname: "/OtherUserProfile", params: { userId: user.id } })
+                    }
+                  >
+                    <Image
+                      source={
+                        user.profile
+                          ? { uri: user.profile }
+                          : require("../../assets/images/default.webp")
+                      }
+                      className="w-14 h-14 rounded-full mr-3 border-2 border-slate-700"
+                    />
+                    <View className="flex-col">
+                      <Text className="text-white text-base">{user.name}</Text>
+                      <Text className="text-white/70 text-sm">{user.caption}</Text>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+
+            {/* Loading/Error */}
+            {isLoading && <Text className="text-white text-center min-h-screen">Loading posts...</Text>}
+            {isError && <Text className="text-red-500 text-center min-h-screen">Failed to load posts.</Text>}
+            {!isLoading && posts.length === 0 && (
+              <Text className="text-white text-center min-h-screen">No posts found.</Text>
+            )}
+          </View>
+        }
+        contentContainerStyle={{
+   
+    backgroundColor: "black", 
+  }}
+      />
 
     {/* Comment Modal */}
   

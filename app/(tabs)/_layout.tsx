@@ -11,7 +11,7 @@ export default function TabsLayout() {
 	
 	return (
 		<>
-			<StatusBar style="light" />
+			<StatusBar style="light"  />
 			<QueryClientProvider client={queryClient}>
 			<Tabs
 				screenOptions={({ route }) => ({

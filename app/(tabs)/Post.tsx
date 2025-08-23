@@ -364,54 +364,7 @@ export default function Post() {
           </View> 
         </View>
 
-        {/* Category Picker */}
-        {/* <View className="mb-6 gap-3">
-          <Text className="text-slate-200 text-md font-semibold mb-3">Category</Text>
-          <View className="flex-row items-center bg-[#000000] rounded-xl p-3 borde border-[#42424b]">
-            <MaterialCommunityIcons name="shape-outline" size={20} color="#e2e8f0" />
-            <View style={{ flex: 1, marginLeft: 12 }}>
-              
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                {['Fitness', 'Travel', 'Food', 'Tech', 'Art', 'Music', 'Other'].map(cat => (
-                  <TouchableOpacity
-                    key={cat}
-                    onPress={() => setCategory(cat)}
-                    style={{ marginRight: 10, backgroundColor: category === cat ? '#ffb86c' : '#23243a', borderRadius: 16, paddingHorizontal: 16, paddingVertical: 8 }}
-                  >
-                    <Text style={{ color: category === cat ? '#181818' : '#fff', fontWeight: 'bold' }}>{cat}</Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </View>
-          </View>
-        </View> */}
-
-        {/* Tags Input */}
-        {/* <View className="mb-6 gap-3">
-          <Text className="text-slate-200 text-md font-semibold mb-3">Tags</Text>
-          <View className="flex-row items-center bg-[#000000] rounded-xl p-3 border border-[#42424b]">
-            <MaterialCommunityIcons name="tag-outline" size={20} color="#e2e8f0" />
-            <TextInput
-              value={tags}
-              onChangeText={setTags}
-              placeholder="Add tags (separated by commas)"
-              placeholderTextColor="#6b7280"
-              className="flex-1 text-white text-base ml-3"
-            />
-          </View>
-          
-          
-          {tags.trim() && (
-            <View className="flex-row flex-wrap gap-2 mt-3 ml-1">
-              {formatTags(tags).map((tag, index) => (
-                <View key={index} className="bg-[#ffb86c] px-3 py-1 rounded-full">
-                  <Text className="text-[#1a1b2e] text-sm font-semibold">#{tag}</Text>
-                </View>
-              ))}
-            </View>
-          )}
-        </View> */}
-
+      
 
         <View className="mt-4  gap-3">
           <Text className="text-slate-200 text-md font-semibold mb-3">Category</Text>

@@ -1,5 +1,3 @@
-
-
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/Providers/AuthProvider';
 import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
@@ -7,7 +5,7 @@ import { Video, ResizeMode, Audio } from "expo-av";
 import { router, useFocusEffect } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Image, Modal, Pressable, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
-
+import * as Clipboard from 'expo-clipboard';
 export default function Profile() {
   const [activeTab, setActiveTab] = useState('video')
 
@@ -19,6 +17,33 @@ export default function Profile() {
   const [videoPosts, setVideoPosts] = useState<any[]>([])
   const [savedPosts, setSavedPosts] = useState<any[]>([])
   const [userProfile, setUserProfile] = useState<any[]>([])
+ const [copied, setCopied] = useState(false);
+  const [followersCount, setFollowersCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
+  
+  
+    async function fetchCounts() {
+      if (!user?.id) return;
+      // Followers: users who follow this user
+      const { count: followers } = await supabase
+        .from('follows')
+        .select('*', { count: 'exact', head: true })
+        .eq('following_id', user?.id);
+      setFollowersCount(followers ?? 0);
+  
+      // Following: users this user follows
+      const { count: following } = await supabase
+        .from('follows')
+        .select('*', { count: 'exact', head: true })
+        .eq('follower_id', user?.id);
+      setFollowingCount(following ?? 0)
+      console.log({followers, following})
+    }
+    fetchCounts();
+  
+    useEffect(() => {
+      fetchCounts();
+    }, [user?.id])
 
   useFocusEffect(
      React.useCallback(() => {
@@ -99,7 +124,7 @@ export default function Profile() {
         </Pressable>
       </View>
       {/* Profile Image */}
-      <View className="w-28 h-28 rounded-full overflow-hidden border-black  -mb-12 mt-8 z-10"
+      <View className="w-28 h-28 rounded-full overflow-hidden border-black border-4 -mb-12 mt-8 z-10"
       >
         <Image
           source={userProfile[0]?.profile ? { uri: userProfile[0]?.profile } : require('../../../assets/images/default.webp')}
@@ -113,11 +138,11 @@ export default function Profile() {
       {/* Stats */}
       <View className="flex-row justify-between  items-center px-16 mt-4 mb-4">
         <View className="items-center">
-          <Text className="text-white text-lg font-bold">132</Text>
+          <Text className="text-white text-lg font-bold">{followingCount}</Text>
           <Text className="text-gray-400 text-xs">Following</Text>
         </View>
         <View className="items-center">
-          <Text className="text-white text-lg font-bold">545</Text>
+          <Text className="text-white text-lg font-bold">{followersCount}</Text>
           <Text className="text-gray-400 text-xs">Followers</Text>
         </View>
         {/* <View className="items-center">
@@ -126,11 +151,20 @@ export default function Profile() {
         </View> */}
       </View>
       {/* Buttons */}
-      <View className="flex-row  justify-between items-center text-center mb-6 mt-4">
-        <TouchableOpacity className="bg-yellow-400 rounded-xl px-12 py-2.5 mr-2" activeOpacity={0.7}>
-          <Text className="text-black font-medium text-base tracking-wide">Share</Text>
-        </TouchableOpacity>
-        <TouchableOpacity className="border border-slate-600 rounded-xl px-8 py-2.5" activeOpacity={0.7} onPress={() => router.push('/(tabs)/Profile/EditProfile')}>
+      <View className="flex-row  justify-between items-center text-center  mb-6 mt-4">
+        <TouchableOpacity
+       className="bg-yellow-400 rounded-xl w-32  py-2.5 mr-2 items-center"
+        activeOpacity={0.7}
+       onPress={async () => {
+       await Clipboard.setStringAsync(`https://yourapp.com/profile/${user?.id}`);
+     setCopied(true);
+       setTimeout(() => setCopied(false), 1500); // Hide after 1.5s
+         }}
+         >
+      <Text className="text-black font-medium text-base tracking-wide">{copied ? 'Copied' : 'Share'}</Text>
+     </TouchableOpacity>
+    
+        <TouchableOpacity className="border border-slate-600 rounded-xl w-32 items-center py-2.5" activeOpacity={0.7} onPress={() => router.push('/(tabs)/Profile/EditProfile')}>
           <Text className="text-white font-medium text-base">Edit Profile</Text>
         </TouchableOpacity>
       </View>
@@ -234,114 +268,6 @@ export default function Profile() {
           )
         )}
       </View>
-
-
-       {/* {profileEdit && (
-  <View className='' >
-      <View className=''>
-    <Text style={{ color: 'white', fontSize: 20, fontWeight: 'bold', marginBottom: 16 }}>Edit Profile</Text>
-    <TextInput
-      value={editProfilePic}
-      onChangeText={setEditProfilePic}
-      placeholder="Paste image URL"
-      style={{ backgroundColor: '#333', color: 'white', padding: 8, borderRadius: 8, marginBottom: 12 }}
-                //   <Image source={{ uri: post.image||post.video }} className="w-full h-60 rounded-xl mb-2" />
-                //   <Text className="text-white text-base font-semibold">{post.caption}</Text>
-                //   {post?.video  && (
-                //     <View  className="absolute top-[45%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
-                //       <View className="bg-black/50 rounded-full p-1.5 items-center justify-center">
-                //         <MaterialCommunityIcons name="play" size={30} color="white" />
-                //       </View>
-                //     </View>
-                //   )}
-                // </View>
-                    <View key={post.id} className="mb-6 items-center" style={{ width: '48%' }}>
-                  {post.video ? (
-                               <>
-                              
-                               <Video
-                                 source={{ uri: post.video }}
-                                 shouldPlay
-                                 isMuted
-                                 isLooping
-                                resizeMode={ResizeMode.COVER} 
-                                 useNativeControls={false}
-                                 style={{ width: "94%", height: 295, borderRadius: 16,marginLeft:10 }}
-                
-                                 />
-                                
-                              </>
-                             ) : (
-                           <Image
-                        source={{ uri: post.image }}
-                             className="w-[94%] ml-3 mt- flex h-80 rounded-2xl"
-                             resizeMode="cover"
-                               />
-                               )} </View>
-                         ))}
-           
-          ) : ( 
-            <View className="items-center  min-h-screen mt-12 ">
-              <Text className="text-slate-100 text-lg font-semibold mb-2">No saved posts</Text>
-              <Text className="text-gray-400 text-base text-center">You haven't saved any posts yet.</Text>
-            </View>
-        )  )}
-        
-        </View>
-
-
-       {/* {profileEdit && (
-  <View className='' >
-      <View className=''>
-    <Text style={{ color: 'white', fontSize: 20, fontWeight: 'bold', marginBottom: 16 }}>Edit Profile</Text>
-    <TextInput
-      value={editProfilePic}
-      onChangeText={setEditProfilePic}
-      placeholder="Paste image URL"
-      style={{ backgroundColor: '#333', color: 'white', padding: 8, borderRadius: 8, marginBottom: 12 }}
-    />
-    <TextInput
-      value={editName}
-      onChangeText={setEditName}
-      placeholder="Enter your name"
-        style={{ backgroundColor: '#333', color: 'white', padding: 8, borderRadius: 8, marginBottom: 12 }}
-    />
-    <TextInput
-      value={editLocation}
-      onChangeText={setEditLocation}
-      placeholder="Enter your location"
-      style={{ backgroundColor: '#333', color: 'white', padding: 8, borderRadius: 8, marginBottom: 12 }}
-    />
-    <TextInput
-      value={editCaption}
-      onChangeText={setEditCaption}
-      placeholder="Enter your caption"
-      style={{ backgroundColor: '#333', color: 'white', padding: 8, borderRadius: 8, marginBottom: 12 }}
-    />
-    <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 16 }}>
-      <TouchableOpacity
-        style={{ backgroundColor: 'green', padding: 12, borderRadius: 8 }}
-        onPress={async () => {
-          const { error } = await supabase.from('profile').upsert({
-            user_id: user?.id,
-            name: editName,
-            location: editLocation,
-            caption: editCaption,
-           profile_pic: editProfilePic
-          });
-          if (!error) setProfileEdit(false);
-        }}
-      >
-        <Text style={{ color: 'white', fontWeight: 'bold' }}>Save</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={{ backgroundColor: 'red', padding: 12, borderRadius: 8 }}
-        onPress={() => setProfileEdit(false)}
-      >
-        <Text style={{ color: 'white', fontWeight: 'bold' }}>Cancel</Text>
-      </TouchableOpacity>
-    </View></View>
-  </View>)} */}
 
       </View>
     </ScrollView>

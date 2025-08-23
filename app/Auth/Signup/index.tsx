@@ -51,8 +51,7 @@ function Signup() {
     setIsLoading(true);
     
     try {
-      // Simulate API call
-      // await new Promise(resolve => setTimeout(resolve, 2000));
+      
       const { data, error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
