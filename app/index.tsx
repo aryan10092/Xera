@@ -1,15 +1,9 @@
-  import { Link, Stack } from "expo-router";
-import { Text, View } from "react-native";
-import "./global.css";
+import { Redirect } from 'expo-router';
+import React from 'react';
+import './global.css';
 
 export default function Index() {
-  return (
-    <View
-      className=" min-h-screen flex  justify-center items-center gap-6"
-
-    >
-    
-      
-    </View>
-  );
+	return <Redirect href="/Auth" />;
 }
+
+

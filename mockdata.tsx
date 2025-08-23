@@ -2,19 +2,19 @@
 
 export  const story:{ name: string, imageUrl: any}[]=[
     {
-        name:"John Doe",
+        name:"Nazir khan",
        imageUrl: require("./assets/images/man1.jpg")
     },
     {
-        name:"Jane Smith",
+        name:"Sher singh",
         imageUrl: require("./assets/images/man2.jpg")
     },
     {
-        name:"Bob Johnson",
+        name:"mahatma gandhi",
         imageUrl: require("./assets/images/man3.jpg")
     },
     {
-        name:"Alice Williams",
+        name:"alice sss",
         imageUrl:""
     },
     {
