@@ -2,6 +2,13 @@
 
 Xera is a modern social media app built with [Expo](https://expo.dev/), [Supabase](https://supabase.com/), [NativeWind](https://www.nativewind.dev/), and [Lottie](https://lottiefiles.com/). It features user authentication, posts with images and videos, animated UI, and a real-time community experience.
 
+## Demo-Video
+
+
+https://github.com/user-attachments/assets/4c6a8431-5980-4a3d-87e4-6e3b9cc447e1
+
+
+
 ## Features
 
 - **User Authentication:** Secure login and signup powered by Supabase.
