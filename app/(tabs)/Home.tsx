@@ -8,6 +8,7 @@ import { Image } from 'react-native';
 import { Pressable, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Video, ResizeMode, Audio } from "expo-av";
 import { categories } from '@/components/Categories';
+import LoadingAnimation from '@/components/LoadingAnimation';
 
 function Home() {
   const session = useAuthStore((state: AuthState) => state.session)
@@ -108,7 +109,9 @@ const statusBarUsers = [
       } else {
         setPosts(data || []);
       }
-      setLoading(false);
+      setTimeout(() => {
+        setLoading(false);
+      }, 1500);
     }
     fetchPosts();
   }, []);
@@ -187,7 +190,10 @@ const statusBarUsers = [
         {/* Post Section */}
         <View className=' mt-8'>
   {/* <Text className='text-white text-lg font-semibold mb-3'>{selectedCategory} Posts</Text> */}
-  {filteredPosts && filteredPosts.length > 0 ? (
+  {loading?
+  <View className="flex-1 bg-black justify-center items-center mt-28 ">
+  <LoadingAnimation /></View>:
+  filteredPosts && filteredPosts.length > 0 ? (
     filteredPosts.map((post, idx) => (
       <Pressable
         onPress={() => router.push({ pathname: '/Allposts', params: { postId: post.id } })}

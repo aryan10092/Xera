@@ -8,6 +8,7 @@ import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { Animated, Dimensions, Easing, FlatList, Image, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { supabase } from '../../lib/supabase';
 import { Video, ResizeMode, Audio } from "expo-av";
+import LoadingAnimation from '@/components/LoadingAnimation';
 
 const { height: screenHeight } = Dimensions.get('window');
 
@@ -275,6 +276,24 @@ const removebookmark=useMutation({
       }
     }
   };
+  useEffect(() => {
+  if (posts && posts.length > 0) {
+    const initialMuteStatus: { [key: number]: boolean } = {};
+    posts.forEach((post: any) => {
+      initialMuteStatus[post.id] = true; 
+    });
+    setVideoMuteStatus(initialMuteStatus);
+  }
+}, [posts]);
+
+  const [videoMuteStatus, setVideoMuteStatus] = useState<{ [key: number]: boolean }>({});
+
+const toggleMute = (postId: number) => {
+  setVideoMuteStatus(prev => ({
+    ...prev,
+    [postId]: !prev[postId]
+  }));
+}
 
   const currentPost = openComment ? posts.find((post: any) => post.id === openComment) : null;
 
@@ -305,13 +324,33 @@ const removebookmark=useMutation({
       {/* Media */}
       <View className="relative">
         {post.video ? (
+          <>
           <Video
             source={{ uri: post.video }}
-            shouldPlay={false} 
-            isMuted
+            shouldPlay={true} 
+            isMuted={videoMuteStatus[post.id] ?? true}
+            isLooping
             resizeMode={ResizeMode.COVER}
             style={{ width: "94%", height: 295, borderRadius: 16, marginLeft: 10 }}
           />
+          <Pressable
+            onPress={() => toggleMute(post.id)}
+            style={{
+              position: 'absolute',
+              right: 20,
+              bottom: 20,
+              backgroundColor: 'rgba(0,0,0,0.6)',
+              borderRadius: 20,
+              padding: 7,
+            }}
+          >
+            <FontAwesome5
+              name={videoMuteStatus[post.id] ? "volume-mute" : "volume-up"}
+              size={18}
+              color="#fff"
+            />
+          </Pressable>
+        </>
         ) : (
           <Image
             source={{ uri: post.image }}
@@ -455,7 +494,7 @@ const removebookmark=useMutation({
             )}
 
             {/* Loading/Error */}
-            {isLoading && <Text className="text-white text-center min-h-screen">Loading posts...</Text>}
+            {isLoading&& <View className="flex-1 bg-black justify-center items-center min-h-screen "><LoadingAnimation /></View>}
             {isError && <Text className="text-red-500 text-center min-h-screen">Failed to load posts.</Text>}
             {!isLoading && posts.length === 0 && (
               <Text className="text-white text-center min-h-screen">No posts found.</Text>

@@ -74,7 +74,7 @@ function Signin() {
               <Ionicons name="arrow-back" size={20} color="white" />
             </TouchableOpacity>
             
-            <Text className="text-white text-3xl font-bold mb-1.5 mt-6">Welcome Back</Text>
+            <Text className="text-white text-3xl font-bold mb-1.5 mt-12">Welcome Back</Text>
             <Text className="text-gray-400 text-base mb-3">
               Sign in to continue your fitness journey
             </Text>

@@ -6,6 +6,7 @@ import { FlatList, Image, Pressable, ScrollView, Text, TouchableOpacity, View } 
 import { Video, ResizeMode, Audio } from "expo-av";
 import { useAuthStore } from '@/Providers/AuthProvider';
 import * as Clipboard from 'expo-clipboard'; 
+import LoadingAnimation from '@/components/LoadingAnimation';
 
 
 
@@ -22,12 +23,14 @@ export default function OtherUserProfile() {
   useEffect(() => {
     async function fetchProfileAndPosts() {
       setLoading(true);
+
       const { data: profileData } = await supabase.from('profile').select('*').eq('id', userId).single();
       setProfile(profileData);
 
       const { data: userPosts } = await supabase.from('Posts').select('*').eq('user_id', userId).order('created_at', { ascending: false });
-      setPosts(userPosts || []);
-      setLoading(false);
+      setPosts(userPosts || [])
+      setTimeout(() => setLoading(false), 1500); 
+      //setLoading(false);
     }
     if (userId) fetchProfileAndPosts();
   }, [userId])
@@ -202,16 +205,18 @@ const handleUnfollow = async () => {
         paddingHorizontal: 16,
         backgroundColor: "black",
         paddingBottom: 40,
+        minHeight: "100%",
       }}
       columnWrapperStyle={{ justifyContent: "space-between" }}
       ListEmptyComponent={
         !loading
-    ? <Text className="text-gray-500 text-center mt-8 min-h-screen">No posts yet.</Text>
+    ? <Text className="text-gray-500 text-center text-lg mt-8 min-h-screen">No posts yet.</Text>
     : null
       }
       ListFooterComponent={
         loading ? (
-          <Text className="text-gray-400 text-center mt-4 min-h-screen">Loading...</Text>
+          <View className='mt-24'>
+          <LoadingAnimation /></View>
         ) : null
       }
     />
