@@ -4,9 +4,7 @@ Xera is a modern social media app built with [Expo](https://expo.dev/), [Supabas
 
 ## Demo-Video
 
-
-https://github.com/user-attachments/assets/4c6a8431-5980-4a3d-87e4-6e3b9cc447e1
-
+https://github.com/user-attachments/assets/1cbb44b6-0688-40c4-8382-9f045f128ff0
 
 
 ## Features
