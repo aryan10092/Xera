@@ -1,6 +1,6 @@
 # Xera - Expo Social Media App
 
-Xera is a modern social media app built with [Expo](https://expo.dev/), [Supabase](https://supabase.com/), [NativeWind](https://www.nativewind.dev/), and [Lottie](https://lottiefiles.com/). It features user authentication, posts with images and videos, animated UI, and a real-time community experience.
+Xera is a modern social media app built with [Expo](https://expo.dev/), [Supabase](https://supabase.com/), [NativeWind](https://www.nativewind.dev/), and [Lottie](https://lottiefiles.com/). It features user authentication, posts with images and videos, and animated UI
 
 ## Demo-Video
 
